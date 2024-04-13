@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model DeletedPostersAndReasons {
+  id                  Int                  @id(map: "PK__DeletedP__3213E83F4034632B") @default(autoincrement())
+  posterId            Int?
+  deleteReasonId      Int?
+  PosterDeleteReasons PosterDeleteReasons? @relation(fields: [deleteReasonId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "DeleteReasons_fk")
+  Posters             Posters?             @relation(fields: [posterId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "Posters_fk")
+}
+
+model ObjectCategories {
+  id       Int       @id(map: "PK__ObjectCa__3213E83F24264CE6") @default(autoincrement())
+  category String    @db.VarChar(30)
+  Posters  Posters[]
+}
+
+model PosterDeleteReasons {
+  id                       Int                        @id(map: "PK__PosterDe__3213E83FCE823A65") @default(autoincrement())
+  reason                   String                     @db.VarChar(25)
+  DeletedPostersAndReasons DeletedPostersAndReasons[]
+}
+
+model Posters {
+  id                        Int                         @id(map: "PK__Posters__3213E83F9AA3DF63") @default(autoincrement())
+  userId                    Int?
+  posterStatusId            Int?
+  item                      String                      @db.VarChar(100)
+  breed                     String?                     @db.VarChar(60)
+  isPet                     Boolean
+  itemCategoryId            Int?
+  description               String                      @db.VarChar(1000)
+  itemStatus                String                      @db.VarChar(175)
+  dateOfAction              DateTime                    @db.Date
+  publishDate               DateTime?                   @db.Date
+  photoLink                 String                      @db.VarChar(500)
+  address                   String                      @db.VarChar(175)
+  coord0                    String                      @db.VarChar(53)
+  coord1                    String                      @db.VarChar(53)
+  phone                     String                      @db.VarChar(18)
+  DeletedPostersAndReasons  DeletedPostersAndReasons[]
+  ObjectCategories          ObjectCategories?           @relation(fields: [itemCategoryId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ObjectCategories_fk")
+  PosterStatuses            PosterStatuses?             @relation(fields: [posterStatusId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "PosterStatuses_fk")
+  Users                     Users?                      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "Users_fk")
+  UnpublishedPostersAnswers UnpublishedPostersAnswers[]
+}
+
+model PosterStatuses {
+  id         Int       @id(map: "PK__PosterSt__3213E83F96579400") @default(autoincrement())
+  statusName String    @db.VarChar(25)
+  Posters    Posters[]
+}
+
+model UnpublishedPostersAnswers {
+  id          Int      @id(map: "PK__Unpublis__3213E83F9AE2443F") @default(autoincrement())
+  posterId    Int?
+  description String   @db.VarChar(1000)
+  Posters     Posters? @relation(fields: [posterId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "PostersUnpublished_fk")
+}
+
+model Users {
+  id       Int       @id(map: "PK__Users__3213E83F6CFB1254") @default(autoincrement())
+  email    String    @db.VarChar(60)
+  name     String    @db.VarChar(60)
+  password String    @db.VarChar(70)
+  phone    String    @db.VarChar(18)
+  address  String    @db.VarChar(175)
+  role     String    @db.VarChar(10)
+  Posters  Posters[]
+}
