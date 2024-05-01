@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client'
-import { Message } from '../utils/types';
+import { Message, User } from '../utils/types';
 import { errors, roles } from '../utils/commonVars';
+import { formatDateTime } from '../utils/commonFunctions';
 const prisma = new PrismaClient()
 
 function returnUserInfoToMakeDecisions(req: Request) {
@@ -48,11 +49,26 @@ class UserController {
          return;
       }
       else if (req.payload.payload?.role === roles.admin) {
-         const usersArr = await prisma.users.findMany({
+         const usersArr: User[] = await prisma.users.findMany({
             orderBy: {
-               email: 'asc',
+               lastActivityTime: 'asc',
             },
+            // orderBy: {
+            //    email: 'asc',
+            // },
          });
+
+         // usersArr.map(user => {
+         //    const dtLastActivity = formatDateTime(new Date(user.lastActivityTime))
+         //    user.lastActivityTime = dtLastActivity;
+
+         //    // if (poster.publishDate && poster.publishDate !== null) {
+         //    //    const dtPub = formatDate(new Date(poster.publishDate))
+         //    //    poster.publishDate = dtPub;
+         //    // }
+
+         //    return user
+         // })
 
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
          const message: Message = {
@@ -553,6 +569,14 @@ class UserController {
                   res.status(403).json(message);
                   return;
                }
+
+               // ! Сначала удалить комменты юзера
+               const deletedRowsNum = await prisma.posterComments.deleteMany({
+                  where: {
+                     userId: toDeleteUserId,
+                  }
+               })
+               console.log("🚀🚀🚀 ~ deleteUser ~ deletedRowsNum:", deletedRowsNum)
 
                const deletedUser = await prisma.users.delete({
                   where: {

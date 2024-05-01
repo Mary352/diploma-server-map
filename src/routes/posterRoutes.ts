@@ -24,6 +24,7 @@ const router = Router();
 
 router.get('/', PosterController.getAllPosters);
 router.get('/categories', PosterController.getAllCategories);
+router.get('/getnotifications', PosterController.getNotifications);
 router.get('/deletereasons', PosterController.getAllPosterDeleteReasons);
 router.get('/posterstatuses', PosterController.getAllPosterStatuses);
 router.get('/my', PosterController.getCurrentUserPosters);

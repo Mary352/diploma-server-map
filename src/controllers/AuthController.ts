@@ -7,6 +7,7 @@ const prisma = new PrismaClient()
 
 import { User, Message, UserLogin } from '../utils/types';
 import { roles } from '../utils/commonVars';
+import { getDateTimeNow } from '../utils/commonFunctions';
 
 const ACCESS_KEY = "ACCESS_KEY";
 const SALT_ROUNDS = 3;
@@ -101,6 +102,17 @@ class AuthController {
             // });
          }
 
+         const updatedUserActivity = await prisma.users.update({
+            where: {
+               id: candidate.id,
+            },
+            data: {
+               lastActivityTime: getDateTimeNow()
+            },
+         });
+
+         console.log('updatedUserActivity while login - ', updatedUserActivity)
+
          const payload = {
             id: candidate.id,
             email: candidate.email,
@@ -108,7 +120,8 @@ class AuthController {
          };
 
          const accessToken: string = jwt.sign(payload, ACCESS_KEY, {
-            expiresIn: '1d',
+            expiresIn: '2d',
+            // expiresIn: '5s',
          });
 
          res.cookie('accessToken', accessToken);
@@ -179,10 +192,10 @@ class AuthController {
 
    public async register(req: Request, res: Response) {
       // public async register(req: Request, res: Response): Promise<void> {
-      const { email, name, password, phone, address }: User = req.body;
+      const { email, name, password, phone, address, coord0, coord1 }: User = req.body;
 
       // !валидация у клиента
-      if (!email || !name || !password || !phone || !address) {
+      if (!email || !name || !password || !phone || !address || !coord0 || !coord1) {
          const message: Message = {
             error: 'Заполните все поля корректными данными',
             accountInfo: {
@@ -217,6 +230,9 @@ class AuthController {
          const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS); // Вы можете выбрать необходимый уровень сложности
          // console.log(hashedPassword.length)
 
+         const ms = Date.now()
+         const date = new Date(ms)
+
          const newUser = await prisma.users.create({
             data: {
                email: email,
@@ -224,7 +240,10 @@ class AuthController {
                password: hashedPassword,
                phone: phone,
                address: address,
-               role: roles.user
+               coord0,
+               coord1,
+               role: roles.user,
+               lastActivityTime: getDateTimeNow(),
             },
          });
 

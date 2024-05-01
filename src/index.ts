@@ -8,6 +8,7 @@ import jwt, { JwtPayload, VerifyOptions } from 'jsonwebtoken';
 import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
 import posterRoutes from './routes/posterRoutes';
+import commentRoutes from './routes/commentRoutes';
 import path from 'path';
 
 const PORT = process.env.PORT || 5000;
@@ -42,6 +43,7 @@ app.use(cors({
 
 app.use((req: Request, res: Response, next: NextFunction) => {
    // console.log('path - ', path.join(__dirname, 'uploads'))
+   console.log('----------app.use-------------------')
    console.log('req.cookies', req.cookies?.accessToken)
    if (req.cookies?.accessToken) {
       console.log('req.cookies', req.cookies?.accessToken)
@@ -66,6 +68,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use('/users', userRoutes);
 app.use('/auth', authRoutes);
 app.use('/posters', posterRoutes);
+app.use('/comments', commentRoutes);
 
 app.listen(PORT, () => {
    console.log(`Server is running on port ${PORT}`);

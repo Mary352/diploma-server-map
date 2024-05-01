@@ -48,7 +48,30 @@ export function formatDate(date: Date): string {
    const year: number = date.getFullYear();
 
    const formattedDate: string = `${day}.${month}.${year}`;
-   console.log(formattedDate);
+   // console.log(formattedDate);
 
    return formattedDate;
+}
+
+export function formatDateTime(date: Date): string {
+   let hours: number | string = date.getHours();
+   if (hours < 10) hours = '0' + hours;
+
+   let minutes: number | string = date.getMinutes();
+   if (minutes < 10) minutes = '0' + minutes;
+
+   // const year: number = date.getFullYear();
+   const formattedDate = formatDate(date)
+
+   const formattedDateTime: string = formattedDate + ` ${hours}:${minutes}`;
+   // console.log(formattedDateTime);
+
+   return formattedDateTime;
+}
+
+export function getDateTimeNow(): Date {
+   const ms = Date.now()
+   const date = new Date(ms)
+
+   return date
 }

@@ -1,21 +1,24 @@
 export type User = {
-   id: number
-   email: string;
-   name: string;
-   password: string;
-   phone: string;
-   address: string;
-   role: string;
+   id: number,
+   email: string,
+   name: string,
+   password: string,
+   phone: string,
+   address: string,
+   role: string,
+   lastActivityTime: Date | string,
+   coord0: string,
+   coord1: string,
 }
 
 export type UserLogin = {
-   email: string;
-   password: string;
+   email: string,
+   password: string,
 }
 
 export type Message = {
-   error?: string;
-   message?: any;
+   error?: string,
+   message?: any,
    rejectReason?: string,
    deleteReason?: string,
    accountInfo: {
@@ -28,19 +31,21 @@ export type Message = {
 }
 
 export type Poster = {
-   id: number;
-   userId: number | null;
-   posterStatusId: number | null;
-   item: string;
-   breed: string | null;
-   isPet: boolean;
-   itemCategoryId: number | null;
-   description: string;
-   itemStatus: string;
-   dateOfAction: Date | string;
-   publishDate?: Date | null | string;
-   photoLink?: string;
-   address?: string;
+   id: number,
+   userId: number | null,
+   posterStatusId: number | null,
+   item: string,
+   breed: string | null,
+   isPet: boolean,
+   itemCategoryId: number | null,
+   description: string,
+   itemStatus: string,
+   dateOfAction: Date | string,
+   publishDate?: Date | null | string,
+   photoLink?: string,
+   address?: string,
+   coord0: string,
+   coord1: string,
    phone: string,
    "ObjectCategories": {
       "category": string
@@ -52,20 +57,35 @@ export type Poster = {
    // "UnpublishedPostersAnswers": { description: string | null; }[]
 }
 
-export type PosterWithReasons = {
+export type Comment = {
    id: number;
+   posterId: number | null;
    userId: number | null;
-   posterStatusId: number | null;
-   item: string;
-   breed: string | null;
-   isPet: boolean;
-   itemCategoryId: number | null;
-   description: string;
-   itemStatus: string;
-   dateOfAction: Date | string;
-   publishDate?: Date | null | string;
-   photoLink?: string;
-   address?: string;
+   comment: string;
+   creationDate: string | Date;
+   readByPosterAuthor: boolean;
+   approved: boolean;
+   changedByAuthor: boolean;
+   complaintsCount: number;
+   Users: {
+      name: string;
+   } | null;
+}
+
+export type PosterWithReasons = {
+   id: number,
+   userId: number | null,
+   posterStatusId: number | null,
+   item: string,
+   breed: string | null,
+   isPet: boolean,
+   itemCategoryId: number | null,
+   description: string,
+   itemStatus: string,
+   dateOfAction: Date | string,
+   publishDate?: Date | null | string,
+   photoLink?: string,
+   address?: string,
    coord0: string,
    coord1: string,
    phone: string,
@@ -76,27 +96,29 @@ export type PosterWithReasons = {
       "statusName": string
    } | null,
    "DeletedPostersAndReasons": {
-      id: number;
-      posterId?: number | null;
-      deleteReasonId?: number | null;
+      id: number,
+      posterId?: number | null,
+      deleteReasonId?: number | null,
       PosterDeleteReasons: {
-         reason: string;
-      } | null;
+         reason: string,
+      } | null,
    }[],
-   "UnpublishedPostersAnswers": { description: string; }[]
+   "UnpublishedPostersAnswers": { description: string, }[]
 }
 
 export type UpdateData = {
-   userEmail?: string;
-   posterStatusId?: number | null;
-   item?: string;
-   breed?: string | null;
-   isPet?: boolean;
-   description?: string;
-   itemStatus?: string;
-   dateOfAction?: Date;
-   photoLink?: string;
-   address?: string;
-   phone?: string;
-   itemCategoryId?: number;
+   userEmail?: string,
+   posterStatusId?: number | null,
+   item?: string,
+   breed?: string | null,
+   isPet?: boolean,
+   description?: string,
+   itemStatus?: string,
+   dateOfAction?: Date,
+   photoLink?: string,
+   address?: string,
+   coord0: string,
+   coord1: string,
+   phone?: string,
+   itemCategoryId?: number,
 }

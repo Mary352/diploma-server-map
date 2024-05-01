@@ -353,6 +353,7 @@ class PosterController {
       const categoriesArr: {
          id: number;
          category: string;
+         isPet: boolean
       }[] = await prisma.objectCategories.findMany({
          orderBy: {
             category: 'asc',
@@ -361,10 +362,17 @@ class PosterController {
 
       const categoriesNamesArr = categoriesArr.map(category => category.category)
 
+      const petCategories = categoriesArr.filter(category => category.isPet)
+      const petCategoriesNames = petCategories.map(category => category.category)
+      console.log("🚀 ~ PosterController ~ getAllCategories ~ petCategoriesNames:", petCategoriesNames)
+      const itemCategories = categoriesArr.filter(category => !category.isPet)
+      const itemCategoriesNames = itemCategories.map(category => category.category)
+      console.log("🚀 ~ PosterController ~ getAllCategories ~ itemCategoriesNames:", itemCategoriesNames)
+
       const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
 
       const message: Message = {
-         message: categoriesNamesArr,
+         message: { petCategories: petCategoriesNames, itemCategories: itemCategoriesNames },
          accountInfo: {
             isAuth: isAuth,
             isNotAdmin: isNotAdmin,
@@ -468,7 +476,8 @@ class PosterController {
                // ! UI валидация
                // !const userEmail = req.payload?.payload?.email;
                const userEmail = req.payload?.payload?.email;
-               const userId = req.payload?.payload?.id || 2;
+               // const userId = req.payload?.payload?.id || 2;
+               const userId = req.payload?.payload?.id;
                console.log("🚀 ~ file: PosterController.ts:159 ~ PosterController ~ createPoster ~ userId:", userId)
                console.log("🚀 ~ file: PosterController.ts:22 ~ PosterController ~ createPoster ~ userEmail:", userEmail)
                // const today = getDateToday();
@@ -702,6 +711,160 @@ class PosterController {
          res.status(500).json(message);
          return;
       }
+   }
+
+   async getNotifications(req: Request, res: Response) {
+      if (!req.payload) {
+         const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
+         const message: Message = {
+            // error: errors.unAuthorized,
+            message: [],
+            accountInfo: {
+               isAuth: isAuth,
+               isNotAdmin: isNotAdmin,
+            }
+         };
+         res.json(message)
+         return;
+      }
+      else {
+         try {
+            const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
+            const posterId = parseInt(req.params.id);
+            const currentUserId = req.payload?.payload?.id
+
+            // if (isNaN(posterId)) {
+            //    const message: Message = {
+            //       error: `Объявление не найдено`,
+            //       accountInfo: {
+            //          isAuth: isAuth,
+            //          isNotAdmin: isNotAdmin,
+            //       }
+            //    };
+            //    res.status(404).json(message);
+            //    return;
+            // }
+            // const post = await prisma.posterComments.findFirst
+
+            // const postersArr: PosterWithReasons[] | null = await prisma.posters.findMany({
+            const postersArr = await prisma.posters.findMany({
+               where: {
+                  AND: {
+                     userId: currentUserId,
+                     PosterComments: {
+                        some: {
+                           readByPosterAuthor: false
+                        }
+                     },
+                     PosterStatuses: {
+                        is: {
+                           statusName: 'опубликовано'
+                        }
+                     }
+                  }
+
+                  // PosterComments {
+                  //    select
+                  // }
+               },
+               // include: {
+               //    ObjectCategories: {
+               //       select: {
+               //          category: true,
+               //       },
+               //    },
+               //    PosterStatuses: {
+               //       select: {
+               //          statusName: true
+               //       }
+               //    },
+               //    DeletedPostersAndReasons: {
+               //       include: {
+               //          PosterDeleteReasons: {
+               //             select: {
+               //                reason: true
+               //             }
+               //          }
+               //       }
+               //    },
+               //    UnpublishedPostersAnswers: {
+               //       select: {
+               //          description: true
+               //       }
+               //    }
+               // },
+            });
+            console.log("🚀 ~ getNotifications ~ postersArr:", postersArr)
+            // const currentUserId = req.payload?.payload?.id
+
+            // if (isNotAdmin && poster && poster.userId !== currentUserId && poster.PosterStatuses?.statusName !== posterStatuses.published) {
+            //    const message: Message = {
+            //       error: `Доступ запрещён`,
+            //       accountInfo: {
+            //          isAuth: isAuth,
+            //          isNotAdmin: isNotAdmin,
+            //       }
+            //    };
+            //    res.status(403).json(message);
+            //    return;
+            // }
+            // if (!poster) {
+            //    const message: Message = {
+            //       error: `Объявление не найдено`,
+            //       accountInfo: {
+            //          isAuth: isAuth,
+            //          isNotAdmin: isNotAdmin,
+            //       }
+            //    };
+            //    res.status(404).json(message);
+            //    return;
+            // }
+            // if (poster !== null) {
+            //    const dtAct = formatDate(new Date(poster.dateOfAction))
+            //    poster.dateOfAction = dtAct;
+
+            //    if (poster.publishDate && poster.publishDate !== null) {
+            //       const dtPub = formatDate(new Date(poster.publishDate))
+            //       poster.publishDate = dtPub;
+            //    }
+            // }
+            const notificationsInfo = postersArr.map(poster => {
+               return { posterId: poster.id, posterItem: poster.item }
+            })
+            console.log("🚀 ~ notificationsInfo ~ notificationsInfo:", notificationsInfo)
+            // console.log("🚀 ~ notificationsInfo ~ notificationsInfo:", notificationsInfo)
+            const message: Message = {
+               message: notificationsInfo,
+               accountInfo: {
+                  isAuth: isAuth,
+                  isNotAdmin: isNotAdmin,
+               }
+            };
+            // const message: Message = {
+            //    message: poster,
+            //    rejectReason: poster.UnpublishedPostersAnswers[0]?.description || '',
+            //    deleteReason: poster.DeletedPostersAndReasons[0]?.PosterDeleteReasons?.reason || '',
+            //    accountInfo: {
+            //       isAuth: isAuth,
+            //       isNotAdmin: isNotAdmin,
+            //    }
+            // };
+            res.json(message);
+            return;
+         } catch (error) {
+            const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
+            const message: Message = {
+               error: 'Произошла ошибка при получении объявления',
+               accountInfo: {
+                  isAuth: isAuth,
+                  isNotAdmin: isNotAdmin,
+               }
+            };
+            res.status(500).json(message);
+            return;
+         }
+      }
+
    }
 
    async getCurrentUserPosters(req: Request, res: Response) {
@@ -1011,7 +1174,7 @@ class PosterController {
             // ! objectStatus на UI: потеряно, найдено
             // publishDate не во время создания, а в update от админа
             // ! address - API Яндекс.Карты, присвоение квартала всем адресам?
-            const { item, breed, isPet, objectCategory, description, itemStatus, dateOfAction, address, phone } = req.body;
+            const { item, breed, isPet, objectCategory, description, itemStatus, dateOfAction, address, phone, coord0, coord1 } = req.body;
             console.log("🚀 ~ file: PosterController.ts:298 ~ PosterController ~ updatePoster ~ req.body:", req.body)
             const posterIdNum = parseInt(posterId);
 
@@ -1108,6 +1271,8 @@ class PosterController {
                         photoLink: filename ? filename : undefined,
                         address: address ? address : undefined,
                         phone: phone ? phone : undefined,
+                        coord0: coord0 ? coord0 : undefined,
+                        coord1: coord1 ? coord1 : undefined,
                      },
                   });
                   console.log("🚀 pet ~ file: PosterController.ts:46 ~ PosterController ~ updatePoster ~ updatedPoster:", updatedPoster)
@@ -1130,6 +1295,8 @@ class PosterController {
                         photoLink: filename ? filename : undefined,
                         address: address ? address : undefined,
                         phone: phone ? phone : undefined,
+                        coord0: coord0 ? coord0 : undefined,
+                        coord1: coord1 ? coord1 : undefined,
                      },
                   });
                   console.log("🚀 not pet ~ file: PosterController.ts:64 ~ PosterController ~ updatePoster ~ updatedPoster:", updatedPoster)
