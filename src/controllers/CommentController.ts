@@ -5,8 +5,11 @@ import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { User, Message, UserLogin, Comment } from '../utils/types';
-import { email_auth, errors, roles } from '../utils/commonVars';
+import { errors, roles } from '../utils/commonVars';
 import { getDateTimeNow, formatDateTime } from '../utils/commonFunctions';
 
 import nodemailer, { Transporter } from 'nodemailer'
@@ -28,8 +31,10 @@ function sendMailNotification(commentText: string, posterLink: string, posterTit
    const transporter: Transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-         user: email_auth.EMAIL,
-         pass: email_auth.PASSWORD
+         // user: 'buro.nahodok.ifind@gmail.com',
+         // pass: 'yote mcal zqmt kqtl'
+         user: process.env.EMAIL,
+         pass: process.env.PASSWORD
       }
    })
 

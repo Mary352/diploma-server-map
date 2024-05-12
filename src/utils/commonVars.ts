@@ -21,10 +21,10 @@ export const posterStatuses = {
    deleted: 'удалено'
 }
 
-export const email_auth = {
-   EMAIL: 'buro.nahodok.ifind@gmail.com',
-   PASSWORD: 'yote mcal zqmt kqtl'
-}
+// export const email_auth = {
+//    EMAIL: 'buro.nahodok.ifind@gmail.com',
+//    PASSWORD: 'yote mcal zqmt kqtl'
+// }
 
 // export const EMAIL = 'alice.bv1998@gmail.com';
 // export const MAIL_PASSWORD = 'deqq zjtc tpwr kxgb';

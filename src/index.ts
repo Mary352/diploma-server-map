@@ -2,8 +2,8 @@ import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser';
 import jwt, { JwtPayload, VerifyOptions } from 'jsonwebtoken';
-// import dotenv from 'dotenv';
-// dotenv.config();
+import dotenv from 'dotenv';
+dotenv.config();
 
 import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
@@ -11,9 +11,10 @@ import posterRoutes from './routes/posterRoutes';
 import commentRoutes from './routes/commentRoutes';
 import path from 'path';
 
-const PORT = process.env.PORT || 5000;
-const COOKIE_SECRET = '1234567890';
-const ACCESS_KEY = "ACCESS_KEY";
+const PORT = process.env.PORT;
+// const COOKIE_SECRET = process.env.COOKIE_SECRET || '1234567890';
+// const COOKIE_SECRET = process.env.COOKIE_SECRET;
+// const ACCESS_KEY: Secret | GetPublicKeyOrSecret = process.env.ACCESS_KEY;
 // const SALT_ROUNDS = 3;
 
 // Расширяем интерфейс Request добавлением свойства payload
@@ -29,7 +30,7 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser(COOKIE_SECRET));
+app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(cors({
@@ -51,7 +52,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       const verifyOptions: VerifyOptions = {
          complete: true, // Указание complete: true для получения полной информации из токена
       };
-      jwt.verify(req.cookies.accessToken, ACCESS_KEY, verifyOptions, (err, decoded) => {
+      jwt.verify(req.cookies.accessToken, process.env.ACCESS_KEY as string, verifyOptions, (err, decoded) => {
          if (err) {
             next();
          } else if (decoded) {
