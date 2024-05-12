@@ -6,11 +6,13 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 import { User, Message, UserLogin, Comment } from '../utils/types';
-import { errors, roles } from '../utils/commonVars';
+import { email_auth, errors, roles } from '../utils/commonVars';
 import { getDateTimeNow, formatDateTime } from '../utils/commonFunctions';
 
-const ACCESS_KEY = "ACCESS_KEY";
-const SALT_ROUNDS = 3;
+import nodemailer, { Transporter } from 'nodemailer'
+
+// const ACCESS_KEY = "ACCESS_KEY";
+// const SALT_ROUNDS = 3;
 
 // interface User {
 //    email: string;
@@ -20,6 +22,40 @@ const SALT_ROUNDS = 3;
 //    address: string;
 //    role: string;
 // }
+
+function sendMailNotification(commentText: string, posterLink: string, posterTitle: string, userMail: string): void {
+   console.log("---🚀 ~ sendMailNotification ~ sendMailNotification:")
+   const transporter: Transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+         user: email_auth.EMAIL,
+         pass: email_auth.PASSWORD
+      }
+   })
+
+   const baseText = `<p>Текст комментария: "${commentText}"</p> 
+   <a href='${posterLink}'>Перейти к объявлению</a>`
+
+   const mailText = posterTitle ? (`<p>Объявление: "${posterTitle}"</p> ` + baseText) : baseText
+
+   const mailOptions = {
+      from: 'alice.bv1998@gmail.com',
+      to: 'testjava1515@gmail.com',
+      // to: userMail ? userMail : 'testjava1515@gmail.com',
+      subject: 'Новый комментарий к объявлению на сайте "Бюро находок"',
+      // text: `${commentText} ${posterLink}`
+      html: mailText
+   }
+
+   transporter.sendMail(mailOptions, err => {
+      // if (err) {
+      console.log(err)
+      // }
+   })
+
+   console.log("---🚀 ~ sendMailNotification ~ sendMailNotification:")
+}
+
 
 function returnUserInfoToMakeDecisions(req: Request) {
    const isAuth = req.payload && req.payload.payload ? true : false
@@ -188,7 +224,7 @@ class CommentController {
                // ! objectStatus на UI: потеряно, найдено
                // publishDate не во время создания, а в update от админа
                // ! address - API Яндекс.Карты, присвоение квартала всем адресам?
-               const { posterId, comment } = req.body;
+               const { posterId, comment, currentPageLink } = req.body;
 
                const currentPoster = await prisma.posters.findUnique(
                   {
@@ -213,6 +249,11 @@ class CommentController {
                console.log("🚀 ~ CommentController ~ createComment ~ createdComment:", createdComment)
 
                const commentsArr = await getCommentsForPoster(posterId);
+               const poster = await prisma.posters.findUnique({
+                  where: {
+                     id: posterId
+                  }
+               })
 
                // const message: Message = {
                //    message: 'Объявление отправлено на рассмотрение',
@@ -227,6 +268,17 @@ class CommentController {
                      isNotAdmin: isNotAdmin,
                   }
                };
+               // не уведомлять автора объявления о комментарии, который написал он
+               if (currentPoster?.userId !== userId) {
+                  const user = await prisma.users.findUnique({
+                     where: {
+                        id: userId
+                     }
+                  })
+                  if (user && poster) {
+                     sendMailNotification(comment, currentPageLink, poster.item, user.email)
+                  }
+               }
                res.status(201).json(message);
                return;
             }
