@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client'
 import { Message, User } from '../utils/types';
 import { errors, roles } from '../utils/commonVars';
-import { formatDateTime } from '../utils/commonFunctions';
+import { formatDateTime, getDateTimeNow } from '../utils/commonFunctions';
 const prisma = new PrismaClient()
 
 function returnUserInfoToMakeDecisions(req: Request) {
@@ -269,8 +269,6 @@ class UserController {
       }
    }
 
-
-
    async updateProfile(req: Request, res: Response) {
       if (!req.payload) {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
@@ -295,7 +293,7 @@ class UserController {
 
             // ! валидация на клиенте
             // const { name, password, phone, address } = req.body;
-            const { email, name, phone, address, role } = req.body;
+            const { email, name, phone, address, role, coord0, coord1 } = req.body;
 
             if (currentUserId !== userId && currentUserRole !== roles.admin) {
                const message: Message = {
@@ -341,7 +339,10 @@ class UserController {
                         name,
                         // password,
                         phone,
-                        address
+                        address: address ? address : undefined,
+                        coord0: coord0 ? coord0 : undefined,
+                        coord1: coord1 ? coord1 : undefined,
+                        lastActivityTime: getDateTimeNow()
                      },
                   });
 
@@ -372,7 +373,10 @@ class UserController {
                      name,
                      // password,
                      phone,
-                     address,
+                     address: address ? address : undefined,
+                     coord0: coord0 ? coord0 : undefined,
+                     coord1: coord1 ? coord1 : undefined,
+                     lastActivityTime: getDateTimeNow()
                   },
                });
 
