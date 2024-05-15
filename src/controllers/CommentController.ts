@@ -44,7 +44,7 @@ function sendMailNotification(commentText: string, posterLink: string, posterTit
    const mailText = posterTitle ? (`<p>Объявление: "${posterTitle}"</p> ` + baseText) : baseText
 
    const mailOptions = {
-      from: 'alice.bv1998@gmail.com',
+      from: process.env.EMAIL,
       to: 'testjava1515@gmail.com',
       // to: userMail ? userMail : 'testjava1515@gmail.com',
       subject: 'Новый комментарий к объявлению на сайте "Бюро находок"',
