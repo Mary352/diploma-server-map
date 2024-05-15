@@ -34,7 +34,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(cors({
-   origin: ["https://diploma-server-map.onrender.com"],
+   origin: ["http://localhost:3000"],
    // origin: '*',
    credentials: true,
 }));
