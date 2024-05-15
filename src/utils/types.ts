@@ -47,7 +47,7 @@ export type Poster = {
    coord0: string,
    coord1: string,
    phone: string,
-   "ObjectCategories": {
+   ObjectCategories: {
       "category": string
    } | null,
    "PosterStatuses": {
