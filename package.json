@@ -2,7 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
     "start": "nodemon --exec ts-node-dev src/index.ts",
     "startOnRender": "node ./build/index.js",
