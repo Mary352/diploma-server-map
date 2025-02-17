@@ -35,12 +35,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(cors({
    origin: 'https://diploma-client-map.onrender.com',
+   // origin: 'http://localhost:3000',
    // origin: '*',
    credentials: true,
 }));
-// app.use(cors());
-
-
 
 app.use((req: Request, res: Response, next: NextFunction) => {
    // console.log('path - ', path.join(__dirname, 'uploads'))
