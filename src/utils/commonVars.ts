@@ -17,8 +17,20 @@ export const posterStatuses = {
    waitPublication: 'ожидает публикации',
    published: 'опубликовано',
    rejected: 'отклонено',
+   updated: 'отредактировано',
+   deleted: 'удалено',
+   updateRejected: 'изменения отклонены',
    waitDelete: 'ожидает удаления',
-   deleted: 'удалено'
+}
+
+export const posterDeleteReasons = {
+   deleteBeforePublish: 'удалено до публикации',
+   found: 'найдено',
+   noHope: 'не надеюсь найти',
+   mistakePublish: 'публикация по ошибке',
+   other: 'другая причина',
+   // updateRejected: 'изменения отклонены',
+   // waitDelete: 'ожидает удаления',
 }
 
 // export const email_auth = {

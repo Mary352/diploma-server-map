@@ -10,7 +10,7 @@ dotenv.config();
 
 import { User, Message, UserLogin, Comment } from '../utils/types';
 import { errors, roles } from '../utils/commonVars';
-import { getDateTimeNow, formatDateTime } from '../utils/commonFunctions';
+import { getDateTimeNow, formatDateTime, returnErrorMessage } from '../utils/commonFunctions';
 
 import nodemailer, { Transporter } from 'nodemailer'
 
@@ -45,8 +45,8 @@ function sendMailNotification(commentText: string, posterLink: string, posterTit
 
    const mailOptions = {
       from: process.env.EMAIL,
+      // to: 'testjava1515@gmail.com',
       to: 'testjava1515@gmail.com',
-      // to: userMail ? userMail : 'testjava1515@gmail.com',
       subject: 'Новый комментарий к объявлению на сайте "Бюро находок"',
       // text: `${commentText} ${posterLink}`
       html: mailText
@@ -204,13 +204,7 @@ class CommentController {
 
       if (!req.payload) {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -235,6 +229,13 @@ class CommentController {
                   {
                      where: {
                         id: posterId,
+                     },
+                     include: {
+                        Users: {
+                           select: {
+                              email: true
+                           }
+                        }
                      }
                   }
                )
@@ -280,8 +281,8 @@ class CommentController {
                         id: userId
                      }
                   })
-                  if (user && poster) {
-                     sendMailNotification(comment, currentPageLink, poster.item, user.email)
+                  if (user && poster && currentPoster?.Users) {
+                     sendMailNotification(comment, currentPageLink, poster.item, currentPoster.Users.email)
                   }
                }
                res.status(201).json(message);
@@ -289,13 +290,7 @@ class CommentController {
             }
             else {
                const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-               const message: Message = {
-                  error: 'Комментирование доступно только авторизованным пользователям',
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Комментирование доступно только авторизованным пользователям')
                res.status(403).json(message);
                return;
             }
@@ -303,18 +298,9 @@ class CommentController {
          }
          catch (error) {
             console.error('Ошибка добавления комментария:', error);
-            // const message: Message = {
-            //    error: 'Произошла ошибка при создании объявления',
-            // };
             const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
 
-            const message: Message = {
-               error: 'Произошла ошибка при добавлении комментария',
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
+            const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при добавлении комментария')
             res.status(500).json(message);
             return;
          }
@@ -332,13 +318,7 @@ class CommentController {
       const posterId = parseInt(req.params.posterId);
       console.log("🚀 ~ CommentController ~ getPosterComments ~ req.params.id:", req.params.posterId)
       if (isNaN(posterId)) {
-         const message: Message = {
-            error: `Объявление не найдено posterId`,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, `Объявление с id ${posterId} не найдено`)
          res.status(404).json(message);
          return;
       }
@@ -459,13 +439,7 @@ class CommentController {
 
       if (!req.payload) {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -523,14 +497,7 @@ class CommentController {
                   return;
                }
                else {
-                  const message: Message = {
-                     error: 'Произошла ошибка при изменении комментария',
-                     accountInfo: {
-                        isAuth: isAuth,
-                        isNotAdmin: isNotAdmin,
-                     }
-                  };
-
+                  const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при изменении комментария')
                   res.status(500).json(message);
                   return;
                }
@@ -547,13 +514,7 @@ class CommentController {
             }
             else {
                const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-               const message: Message = {
-                  error: 'Отправка жалоб на комментарии доступна только авторизованным пользователям',
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Отправка жалоб на комментарии доступна только авторизованным пользователям')
                res.status(403).json(message);
                return;
             }
@@ -561,18 +522,9 @@ class CommentController {
          }
          catch (error) {
             console.error('Ошибка обработки жалобы на комментарий:', error);
-            // const message: Message = {
-            //    error: 'Произошла ошибка при создании объявления',
-            // };
             const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
 
-            const message: Message = {
-               error: 'Произошла ошибка при обработке жалобы на комментарий',
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
+            const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при обработке жалобы на комментарий')
             res.status(500).json(message);
             return;
          }
@@ -649,19 +601,10 @@ class CommentController {
 
          }
          catch (error) {
-            console.error('Ошибка обработки жалобы на комментарий:', error);
-            // const message: Message = {
-            //    error: 'Произошла ошибка при создании объявления',
-            // };
+            console.error('Ошибка при обновлении прочтения комментариев автором:', error);
             const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
 
-            const message: Message = {
-               error: 'Произошла ошибка при обработке жалобы на комментарий',
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
+            const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при обработке обновлении прочтения комментариев автором')
             res.status(500).json(message);
             return;
          }
@@ -671,13 +614,7 @@ class CommentController {
    async updateComment(req: Request, res: Response) {  // обновление from user
       if (!req.payload) {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -694,13 +631,7 @@ class CommentController {
             if (isNaN(commentIdNum)) {
                console.log("🚀 ~ file: UserController.ts:135 ~ getOne ~ isNaN")
 
-               const message: Message = {
-                  error: `Комментарий не найден`,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Комментарий не найден')
                res.status(404).json(message);
                return;
             }
@@ -744,27 +675,14 @@ class CommentController {
                   return;
                }
                else {
-                  const message: Message = {
-                     error: 'Произошла ошибка при изменении комментария',
-                     accountInfo: {
-                        isAuth: isAuth,
-                        isNotAdmin: isNotAdmin,
-                     }
-                  };
-
+                  const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при изменении комментария')
                   res.status(500).json(message);
                   return;
                }
             }
             else {
                const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-               const message: Message = {
-                  error: errors.forbidAccess,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.forbidAccess)
                res.status(403).json(message);
                return;
             }
@@ -773,14 +691,7 @@ class CommentController {
             console.error('Ошибка изменения комментария:', error);
 
             const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-            const message: Message = {
-               error: 'Произошла ошибка при изменении комментария',
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
-
+            const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при изменении комментария')
             res.status(500).json(message);
             return;
          }
@@ -790,13 +701,7 @@ class CommentController {
    async approveComment(req: Request, res: Response) {  // обновление from admin
       if (!req.payload) {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -809,13 +714,7 @@ class CommentController {
 
             if (isNaN(commentIdNum)) {
 
-               const message: Message = {
-                  error: `Комментарий не найден`,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Комментарий не найден')
                res.status(404).json(message);
                return;
             }
@@ -852,14 +751,7 @@ class CommentController {
 
                }
                else {
-                  const message: Message = {
-                     error: 'Произошла ошибка при изменении комментария',
-                     accountInfo: {
-                        isAuth: isAuth,
-                        isNotAdmin: isNotAdmin,
-                     }
-                  };
-
+                  const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при изменении комментария')
                   res.status(500).json(message);
                   return;
                }
@@ -877,13 +769,7 @@ class CommentController {
             }
             else {
                const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-               const message: Message = {
-                  error: errors.forbidAccess,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.forbidAccess)
                res.status(403).json(message);
                return;
             }
@@ -892,14 +778,7 @@ class CommentController {
             console.error('Ошибка одобрения комментария:', error);
 
             const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-            const message: Message = {
-               error: 'Произошла ошибка при одобрении комментария',
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
-
+            const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при одобрении комментария')
             res.status(500).json(message);
             return;
          }
@@ -909,13 +788,7 @@ class CommentController {
    async deleteComment(req: Request, res: Response) {
       if (!req.payload) {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -931,13 +804,7 @@ class CommentController {
 
             if (isNaN(toDeleteCommentId)) {
 
-               const message: Message = {
-                  error: `Комментарий не найден`,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Комментарий не найден')
                res.status(404).json(message);
                return;
             }
@@ -949,13 +816,7 @@ class CommentController {
             });
 
             if (!commentToDelete) {
-               const message: Message = {
-                  error: 'Комментарий не найден',
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Комментарий не найден')
                res.status(404).json(message);
                return;
             }
@@ -1001,14 +862,7 @@ class CommentController {
 
                }
                else {
-                  const message: Message = {
-                     error: 'Произошла ошибка при изменении комментария',
-                     accountInfo: {
-                        isAuth: isAuth,
-                        isNotAdmin: isNotAdmin,
-                     }
-                  };
-
+                  const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при удалении комментария')
                   res.status(500).json(message);
                   return;
                }
@@ -1026,13 +880,7 @@ class CommentController {
                // return;
             }
             else {
-               const message: Message = {
-                  error: errors.forbidAccess,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.forbidAccess)
                res.status(403).json(message);
                return;
             }
@@ -1041,13 +889,7 @@ class CommentController {
             console.log("🚀 ~ CommentController ~ deleteUser ~ error:", error)
 
             const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-            const message: Message = {
-               error: 'Произошла ошибка при удалении комментария',
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
+            const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при удалении комментария')
             res.status(500).json(message);
             return;
          }
@@ -1058,13 +900,7 @@ class CommentController {
 
       if (!req.payload) {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -1104,13 +940,7 @@ class CommentController {
       }
       else {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.forbidAccess,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.forbidAccess)
          res.status(403).json(message);
          return;
       }

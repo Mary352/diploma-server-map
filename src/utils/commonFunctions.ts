@@ -3,6 +3,9 @@
 //    const isNotAdmin = payload && payload.role === 'admin' ? false : true;
 //    const userLoginForLink = payload?.email || '';
 
+import { errors } from "./commonVars";
+import { Message } from "./types";
+
 //    return { isAuth, isNotAdmin, userLoginForLink };
 // }
 
@@ -25,17 +28,30 @@
 
 export function getDateToday(): Date {
    const today = new Date();
-   const year = today.getFullYear();
-   const month = today.getMonth() + 1; // Месяцы начинаются с 0
+
    const day = today.getDate();
+   today.setDate(day - 2)
 
-   const strDate = `${year}-${month}-${day}`;
-   console.log(strDate);
+   today.setUTCHours(0)
+   today.setUTCMinutes(0)
+   today.setUTCSeconds(0)
+   today.setUTCMilliseconds(0)
+   // --------------------------------------------
+   console.log("🚀 ~ getDateToday ~ today:", today)
+   // const year = today.getFullYear();
+   // const month = today.getMonth() + 1; // Месяцы начинаются с 0
+   // const day = today.getDate();
 
-   const dateToday = new Date(strDate);
-   console.log("🚀 ~ file: commonFunctions.ts:36 ~ getDateToday ~ dateToday:", dateToday)
+   // const strDate = `${year}-${month}-${day}`;
+   // console.log(strDate);
 
-   return dateToday;
+   // const dateToday = new Date(strDate);
+   // console.log("🚀 ~ file: commonFunctions.ts:36 ~ getDateToday ~ dateToday:", dateToday)
+
+   // return dateToday;
+   // --------------------------------------------
+
+   return today
 }
 
 export function formatDate(date: Date): string {
@@ -73,5 +89,35 @@ export function getDateTimeNow(): Date {
    const ms = Date.now()
    const date = new Date(ms)
 
+   const day = date.getDate();
+   date.setDate(day - 1)
+
+   // const hour = date.getUTCHours();
+   // date.setUTCHours(hour - 6)
+
    return date
+}
+
+export function returnErrorMessage(isAuth: boolean, isNotAdmin: boolean, errMessage: string) {
+   const message: Message = {
+      error: errMessage,
+      accountInfo: {
+         isAuth: isAuth,
+         isNotAdmin: isNotAdmin,
+      }
+   };
+   // res.status(401).json(message)
+   return message;
+}
+
+export function returnOkMessage(isAuth: boolean, isNotAdmin: boolean, msg: any) {
+   const message: Message = {
+      message: msg,
+      accountInfo: {
+         isAuth: isAuth,
+         isNotAdmin: isNotAdmin,
+      }
+   };
+   // res.status(401).json(message)
+   return message;
 }

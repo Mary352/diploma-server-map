@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client'
 import { Message, User } from '../utils/types';
 import { errors, roles } from '../utils/commonVars';
-import { formatDateTime, getDateTimeNow } from '../utils/commonFunctions';
+import { formatDateTime, getDateTimeNow, returnErrorMessage, returnOkMessage } from '../utils/commonFunctions';
 const prisma = new PrismaClient()
 
 function returnUserInfoToMakeDecisions(req: Request) {
@@ -33,18 +33,8 @@ class UserController {
    async getAll(req: Request, res: Response) {
 
       if (!req.payload) {
-         // res.redirect('/auth/login');
-         // const message: Message = {
-         //    error: 'Неавторизован. Перенаправить на стр. входа',
-         // };
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -71,26 +61,14 @@ class UserController {
          // })
 
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            message: usersArr,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnOkMessage(isAuth, isNotAdmin, usersArr)
          res.json(message);
          return;
 
       }
       else {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.forbidAccess,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.forbidAccess)
          res.status(403).json(message);
          return;
       }
@@ -99,18 +77,8 @@ class UserController {
    async getAllUsersFiltered(req: Request, res: Response) {
 
       if (!req.payload) {
-         // res.redirect('/auth/login');
-         // const message: Message = {
-         //    error: 'Неавторизован. Перенаправить на стр. входа',
-         // };
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -121,31 +89,22 @@ class UserController {
                role: userRole
             },
             orderBy: {
-               email: 'asc',
+               lastActivityTime: 'asc',
             },
+            // orderBy: {
+            //    email: 'asc',
+            // },
          });
 
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            message: usersArr,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnOkMessage(isAuth, isNotAdmin, usersArr)
          res.json(message);
          return;
 
       }
       else {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.forbidAccess,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.forbidAccess)
          res.status(403).json(message);
          return;
       }
@@ -156,18 +115,8 @@ class UserController {
       // console.log('req.payload getAll ', req.payload?.payload?.role)
 
       if (!req.payload) {
-         // res.redirect('/auth/login');
-         // const message: Message = {
-         //    error: 'Неавторизован. Перенаправить на стр. входа',
-         // };
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -181,13 +130,7 @@ class UserController {
             if (isNaN(userId)) {
                console.log("🚀 ~ file: UserController.ts:135 ~ getOne ~ isNaN")
 
-               const message: Message = {
-                  error: `Пользователь с id ${req.params.id} не найден`,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, `Пользователь с id ${req.params.id} не найден`)
                res.status(404).json(message);
                return;
             }
@@ -195,16 +138,8 @@ class UserController {
             const currentUserId = req.payload?.payload?.id;
             const currentUserRole = req.payload?.payload?.role;
 
-
-
             if (currentUserId !== userId && currentUserRole !== roles.admin) {
-               const message: Message = {
-                  error: errors.forbidAccess,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.forbidAccess)
                res.status(403).json(message);
                return;
             }
@@ -220,49 +155,24 @@ class UserController {
             // если пользователь удалён, а токен ещё действителен
             if (!user && currentUserId === userId) {
 
-               const message: Message = {
-                  error: `Аккаунт удалён. Зарегистрируйтесь`,
-                  accountInfo: {
-                     isAuth: false,
-                     isNotAdmin: false,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, `Аккаунт удалён. Зарегистрируйтесь`)
                res.status(401).json(message);
                return;
             }
             if (!user) {
-
-               const message: Message = {
-                  error: `Пользователь с id ${userId} не найден`,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, `Пользователь с id ${userId} не найден`)
                res.status(404).json(message);
                return;
             }
 
             // const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-            const message: Message = {
-               message: user,
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
+            const message: Message = returnOkMessage(isAuth, isNotAdmin, user)
             res.json(message);
             return;
          } catch (error) {
             const userId = req.params.id;
             const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-            const message: Message = {
-               error: `Пользователь с id ${userId} не найден`,
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
+            const message: Message = returnErrorMessage(isAuth, isNotAdmin, `Пользователь с id ${userId} не найден`)
             res.status(404).json(message);
             return;
          }
@@ -272,13 +182,7 @@ class UserController {
    async updateProfile(req: Request, res: Response) {
       if (!req.payload) {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -296,13 +200,7 @@ class UserController {
             const { email, name, phone, address, role, coord0, coord1 } = req.body;
 
             if (currentUserId !== userId && currentUserRole !== roles.admin) {
-               const message: Message = {
-                  error: errors.forbidAccess,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.forbidAccess)
                res.status(403).json(message);
                return;
             }
@@ -315,13 +213,7 @@ class UserController {
 
             if (!user) {
 
-               const message: Message = {
-                  error: `Пользователь с id ${userId} не найден`,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, `Пользователь с id ${userId} не найден`)
                res.status(404).json(message);
                return;
             }
@@ -340,8 +232,8 @@ class UserController {
                         // password,
                         phone,
                         address: address ? address : undefined,
-                        coord0: coord0 ? coord0 : undefined,
-                        coord1: coord1 ? coord1 : undefined,
+                        coord0: (coord0 && coord0 !== 'undefined') ? coord0 : undefined,
+                        coord1: (coord1 && coord1 !== 'undefined') ? coord1 : undefined,
                         lastActivityTime: getDateTimeNow()
                      },
                   });
@@ -370,12 +262,12 @@ class UserController {
                   },
                   data: {
                      // email,
-                     name,
+                     name: name ? name : undefined,
                      // password,
-                     phone,
+                     phone: phone ? phone : undefined,
                      address: address ? address : undefined,
-                     coord0: coord0 ? coord0 : undefined,
-                     coord1: coord1 ? coord1 : undefined,
+                     coord0: (coord0 && coord0 !== 'undefined') ? coord0 : undefined,
+                     coord1: (coord1 && coord1 !== 'undefined') ? coord1 : undefined,
                      lastActivityTime: getDateTimeNow()
                   },
                });
@@ -456,13 +348,7 @@ class UserController {
             //    // user: updatedUser,
             // };
             // const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-            const message: Message = {
-               message: updatedUser,
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
+            const message: Message = returnOkMessage(isAuth, isNotAdmin, updatedUser)
             res.json(message);
             return;
 
@@ -472,13 +358,7 @@ class UserController {
             //    error: 'Произошла ошибка при обновлении данных пользователя',
             // };
             const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-            const message: Message = {
-               error: 'Произошла ошибка при обновлении данных пользователя',
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
+            const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при обновлении данных пользователя')
             res.status(500).json(message);
             return;
          }
@@ -488,13 +368,7 @@ class UserController {
    async deleteUser(req: Request, res: Response) {
       if (!req.payload) {
          const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-         const message: Message = {
-            error: errors.unAuthorized,
-            accountInfo: {
-               isAuth: isAuth,
-               isNotAdmin: isNotAdmin,
-            }
-         };
+         const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.unAuthorized)
          res.status(401).json(message)
          return;
       }
@@ -523,13 +397,7 @@ class UserController {
             if (isNaN(toDeleteUserId)) {
                console.log("🚀 ~ file: UserController.ts:135 ~ getOne ~ isNaN")
 
-               const message: Message = {
-                  error: `Пользователь с id ${req.params.id} не найден`,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, `Пользователь с id ${req.params.id} не найден`)
                res.status(404).json(message);
                return;
             }
@@ -547,29 +415,14 @@ class UserController {
                   //    error: 'Пользователь не найден',
                   // };
                   const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-                  const message: Message = {
-                     error: 'Пользователь не найден',
-                     accountInfo: {
-                        isAuth: isAuth,
-                        isNotAdmin: isNotAdmin,
-                     }
-                  };
+                  const message: Message = returnErrorMessage(isAuth, isNotAdmin, `Пользователь не найден`)
                   res.status(404).json(message);
                   return;
                }
 
                if (userToDelete.role === roles.admin) {
-                  // const message: Message = {
-                  //    error: 'Нельзя удалять профиль пользователя с ролью admin',
-                  // };
                   const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-                  const message: Message = {
-                     error: 'Нельзя удалять профиль пользователя с ролью admin',
-                     accountInfo: {
-                        isAuth: isAuth,
-                        isNotAdmin: isNotAdmin,
-                     }
-                  };
+                  const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Нельзя удалять профиль пользователя с ролью admin')
                   res.status(403).json(message);
                   return;
                }
@@ -589,32 +442,16 @@ class UserController {
                });
 
                console.log("🚀 ~ file: UserController.ts:203 ~ deleteUser ~ deletedUser:", deletedUser)
-
-               // const message: Message = {
-               //    message: 'Пользователь успешно удален',
-               // };
                const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-               const message: Message = {
-                  message: 'Пользователь успешно удален',
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
+               const message: Message = returnOkMessage(isAuth, isNotAdmin, 'Пользователь успешно удален')
                res.json(message);
                return;
                // return;
             }
             else {
                const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-               const message: Message = {
-                  error: errors.forbidAccess,
-                  accountInfo: {
-                     isAuth: isAuth,
-                     isNotAdmin: isNotAdmin,
-                  }
-               };
-               res.json(message);
+               const message: Message = returnErrorMessage(isAuth, isNotAdmin, errors.forbidAccess)
+               res.status(403).json(message);
                return;
             }
 
@@ -638,17 +475,8 @@ class UserController {
 
          } catch (error) {
             console.log("🚀 ~ file: UserController.ts:200 ~ deleteUser ~ error:", error)
-            // const message: Message = {
-            //    error: 'Произошла ошибка при удалении пользователя',
-            // };
             const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
-            const message: Message = {
-               error: 'Произошла ошибка при удалении пользователя',
-               accountInfo: {
-                  isAuth: isAuth,
-                  isNotAdmin: isNotAdmin,
-               }
-            };
+            const message: Message = returnErrorMessage(isAuth, isNotAdmin, 'Произошла ошибка при удалении пользователя')
             res.status(500).json(message);
             return;
          }

@@ -16,10 +16,11 @@ model DeletedPostersAndReasons {
 }
 
 model ObjectCategories {
-  id       Int       @id(map: "PK__ObjectCa__3213E83FDBFBC129") @default(autoincrement())
-  category String    @db.VarChar(30)
-  isPet    Boolean
-  Posters  Posters[]
+  id                          Int                           @id(map: "PK__ObjectCa__3213E83FDBFBC129") @default(autoincrement())
+  category                    String                        @db.VarChar(30)
+  isPet                       Boolean
+  Posters                     Posters[]
+  PostersWaitForUpdateApprove PostersWaitForUpdateApprove[]
 }
 
 model PosterComments {
@@ -68,9 +69,10 @@ model Posters {
 }
 
 model PosterStatuses {
-  id         Int       @id(map: "PK__PosterSt__3213E83F0140A5BE") @default(autoincrement())
-  statusName String    @db.VarChar(25)
-  Posters    Posters[]
+  id                          Int                           @id(map: "PK__PosterSt__3213E83F0140A5BE") @default(autoincrement())
+  statusName                  String                        @db.VarChar(25)
+  Posters                     Posters[]
+  PostersWaitForUpdateApprove PostersWaitForUpdateApprove[]
 }
 
 model UnpublishedPostersAnswers {
@@ -81,16 +83,39 @@ model UnpublishedPostersAnswers {
 }
 
 model Users {
-  id               Int              @id(map: "PK__Users__3213E83F18A527A1") @default(autoincrement())
-  email            String           @db.VarChar(60)
-  name             String           @db.VarChar(60)
-  password         String           @db.VarChar(70)
-  phone            String           @db.VarChar(18)
-  address          String           @db.VarChar(175)
-  coord0           String           @db.VarChar(53)
-  coord1           String           @db.VarChar(53)
-  role             String           @db.VarChar(10)
-  lastActivityTime DateTime
-  PosterComments   PosterComments[]
-  Posters          Posters[]
+  id                          Int                           @id(map: "PK__Users__3213E83F18A527A1") @default(autoincrement())
+  email                       String                        @db.VarChar(60)
+  name                        String                        @db.VarChar(60)
+  password                    String                        @db.VarChar(70)
+  phone                       String                        @db.VarChar(18)
+  address                     String                        @db.VarChar(175)
+  coord0                      String                        @db.VarChar(53)
+  coord1                      String                        @db.VarChar(53)
+  role                        String                        @db.VarChar(10)
+  lastActivityTime            DateTime
+  PosterComments              PosterComments[]
+  Posters                     Posters[]
+  PostersWaitForUpdateApprove PostersWaitForUpdateApprove[]
+}
+
+model PostersWaitForUpdateApprove {
+  id               Int               @id(map: "PK__PostersW__3213E83F7EB86066")
+  userId           Int?
+  posterStatusId   Int?
+  item             String            @db.VarChar(100)
+  breed            String?           @db.VarChar(60)
+  isPet            Boolean
+  itemCategoryId   Int?
+  description      String            @db.VarChar(1000)
+  itemStatus       String            @db.VarChar(175)
+  dateOfAction     DateTime          @db.Date
+  publishDate      DateTime?         @db.Date
+  photoLink        String            @db.VarChar(500)
+  address          String            @db.VarChar(175)
+  coord0           String            @db.VarChar(53)
+  coord1           String            @db.VarChar(53)
+  phone            String            @db.VarChar(18)
+  ObjectCategories ObjectCategories? @relation(fields: [itemCategoryId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "ObjectCategoriesUpd_fk")
+  PosterStatuses   PosterStatuses?   @relation(fields: [posterStatusId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "PosterStatusesUpd_fk")
+  Users            Users?            @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "UsersUPD_fk")
 }

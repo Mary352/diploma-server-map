@@ -190,6 +190,43 @@ class AuthController {
       }
    }
 
+   public async isAuth(req: Request, res: Response) {
+      // public async logIn(req: Request, res: Response): Promise<void> {
+      const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req)
+
+      const message: Message = {
+         message: 'auth info',
+         accountInfo: {
+            isAuth: isAuth,
+            isNotAdmin: isNotAdmin
+         }
+      };
+      try {
+         // res.cookie('accessToken', '');
+
+         message.message = 'Выход осуществлён';
+         // const { isAuth, isNotAdmin } = returnUserInfoToMakeDecisions(req);
+
+
+         res.json(message);
+         return;
+      }
+      catch (error) {
+         // Обработка ошибок при выполнении запроса к базе данных или других ошибок
+         console.error('Ошибка выхода:', error);
+         const message: Message = {
+            accountInfo: {
+               isAuth: false,
+               isNotAdmin: false
+            }
+         };
+         message.error = 'Произошла ошибка выхода';
+         res.status(500).json(message);
+         return;
+         // res.status(500).send('Произошла ошибка входа');
+      }
+   }
+
    public async register(req: Request, res: Response) {
       // public async register(req: Request, res: Response): Promise<void> {
       const { email, name, password, phone, address, coord0, coord1 }: User = req.body;

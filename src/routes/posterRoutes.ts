@@ -30,9 +30,11 @@ router.get('/posterstatuses', PosterController.getAllPosterStatuses);
 router.get('/my', PosterController.getCurrentUserPosters);
 router.post('/create', upload.single('photo'), PosterController.createPoster);
 router.post('/decide', PosterController.updatePosterStatus);
+router.post('/decideupdate', PosterController.decidePosterUpdate);
 router.post('/upd/:id', upload.single('photo'), PosterController.updatePoster);
 router.post('/del', PosterController.deletePoster);
 router.post('/filter', PosterController.getAllPostersFiltered);
+router.get('/getstatistics', PosterController.getStatistics);
 
 router.get('/:id', PosterController.getPosterById);
 

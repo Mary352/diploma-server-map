@@ -21,6 +21,7 @@ export type Message = {
    message?: any,
    rejectReason?: string,
    deleteReason?: string,
+   rejectUpdMessage?: string,
    accountInfo: {
       isAuth: boolean,
       isNotAdmin: boolean,
@@ -53,6 +54,62 @@ export type Poster = {
    "PosterStatuses": {
       "statusName": string
    } | null,
+   // "DeletedPostersAndReasons": { deleteReasonId: number | null; }[],
+   // "UnpublishedPostersAnswers": { description: string | null; }[]
+}
+
+export type PosterWaitForUpdateApprove = {
+   id: number,
+   posterStatusId: number | null,
+   breed: string | null,
+   itemCategoryId: number | null,
+   description: string | null,
+   // dateOfAction: Date | string | null,
+   photoLink?: string | null,
+   address?: string | null,
+   coord0: string | null,
+   coord1: string | null,
+   phone: string | null,
+   ObjectCategories: {
+      "category": string
+   } | null,
+   "PosterStatuses": {
+      "statusName": string
+   } | null,
+   // "DeletedPostersAndReasons": { deleteReasonId: number | null; }[],
+   // "UnpublishedPostersAnswers": { description: string | null; }[]
+}
+
+export type PosterWaitForUpdateApproveShort = {
+   id: number,
+   posterStatusId: number | null,
+   breed: string | null,
+   itemCategoryId: number | null,
+   description: string | null,
+   // dateOfAction: Date | string | null,
+   photoLink?: string | null,
+   address?: string | null,
+   coord0: string | null,
+   coord1: string | null,
+   phone: string | null,
+
+   userId: number | null,
+
+   item: string,
+
+   isPet: boolean,
+
+
+   itemStatus: string,
+   dateOfAction: Date | string,
+   publishDate?: Date | null | string,
+
+   // ObjectCategories: {
+   //    "category": string
+   // } | null,
+   // "PosterStatuses": {
+   //    "statusName": string
+   // } | null,
    // "DeletedPostersAndReasons": { deleteReasonId: number | null; }[],
    // "UnpublishedPostersAnswers": { description: string | null; }[]
 }
@@ -104,6 +161,40 @@ export type PosterWithReasons = {
       } | null,
    }[],
    "UnpublishedPostersAnswers": { description: string, }[]
+}
+
+export type PosterWithReasonsPossiblyUndef = {
+   id: number,
+   userId: number | null,
+   posterStatusId: number | null,
+   item: string,
+   breed: string | null,
+   isPet: boolean,
+   itemCategoryId: number | null,
+   description: string,
+   itemStatus: string,
+   dateOfAction: Date | string,
+   publishDate?: Date | null | string,
+   photoLink?: string,
+   address?: string,
+   coord0: string,
+   coord1: string,
+   phone: string,
+   "ObjectCategories"?: {
+      "category": string
+   } | null,
+   "PosterStatuses"?: {
+      "statusName": string
+   } | null,
+   "DeletedPostersAndReasons"?: {
+      id: number,
+      posterId?: number | null,
+      deleteReasonId?: number | null,
+      PosterDeleteReasons: {
+         reason: string,
+      } | null,
+   }[],
+   "UnpublishedPostersAnswers"?: { description: string, }[]
 }
 
 export type UpdateData = {
