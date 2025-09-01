@@ -4,7 +4,12 @@ import { Message, Poster, PosterWaitForUpdateApprove, PosterWaitForUpdateApprove
 import * as fs from 'fs';
 import { errors, posterDeleteReasons, posterStatuses, roles } from '../utils/commonVars';
 import path from 'path';
+import { v4 as uuidv4 } from 'uuid'; // Используем для генерации уникального имени файла
 import { formatDate, getDateTimeNow, getDateToday, returnErrorMessage, returnOkMessage } from '../utils/commonFunctions';
+import { createClient } from 'webdav'
+
+const client = createClient(process.env.WEBDAV_REMOTE_URL || "", { username: process.env.WEBDAV_USERNAME, password: process.env.WEBDAV_PASSWORD, });
+
 const prisma = new PrismaClient();
 function returnUserInfoToMakeDecisions(req: Request) {
    const isAuth = req.payload && req.payload.payload ? true : false
@@ -15,6 +20,23 @@ function returnUserInfoToMakeDecisions(req: Request) {
    }
 }
 class PosterController {
+   async getPhoto(req: Request, res: Response) {
+      try {
+         const remotePath = `/uploads/${encodeURIComponent(req.params.filename)}`;
+
+         const exists = await client.exists(remotePath);
+         if (!exists) {
+            console.warn(`Файл ${remotePath} не найден`);
+         }
+         const stream = !exists ? client.createReadStream('/uploads/nophoto.jpg') : client.createReadStream(remotePath);
+         stream.pipe(res);
+
+      } catch (err) {
+         console.error("Ошибка getPhoto from YaDisk webdav:", err);
+         res.status(404).send("Файл не найден");
+      }
+   }
+
    async getAllPosters(req: Request, res: Response) {
       const role = req.payload?.payload?.role;
       if (role === roles.admin) {   // админ видит все, (кроме имеющих статус Удалено - нет, пока абосолютно все), в убывающем порядке нумерации по id (от последнего к первому)
@@ -388,7 +410,13 @@ class PosterController {
                   filename = 'nophoto.jpg';
                }
                else {
-                  filename = req.file.filename;
+                  filename = `${uuidv4()}${path.extname(req.file.originalname)}`; // Генерируем уникальное имя файла
+                  try {
+                     // overwrite - перезаписать файлы с одинаковыми именами, иначе - ошибка
+                     await client.putFileContents('/uploads/' + filename, req.file.buffer, { overwrite: true });
+                     } catch (error) {
+                        console.error('Ошибка загрузки файла webdav: ', error);
+                  }
                }
                if (isPet) {
                   const createdPoster = await prisma.posters.create({
