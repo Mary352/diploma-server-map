@@ -6,9 +6,9 @@ import { errors, posterDeleteReasons, posterStatuses, roles } from '../utils/com
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid'; // Используем для генерации уникального имени файла
 import { formatDate, getDateTimeNow, getDateToday, returnErrorMessage, returnOkMessage } from '../utils/commonFunctions';
-// import { createClient } from 'webdav'
+import { createClient } from 'webdav';
 
-// const client = createClient(process.env.WEBDAV_REMOTE_URL || "", { username: process.env.WEBDAV_USERNAME, password: process.env.WEBDAV_PASSWORD, });
+const client = createClient(process.env.WEBDAV_REMOTE_URL || "", { username: process.env.WEBDAV_USERNAME, password: process.env.WEBDAV_PASSWORD, });
 
 const prisma = new PrismaClient();
 function returnUserInfoToMakeDecisions(req: Request) {
@@ -23,7 +23,7 @@ class PosterController {
    async getPhoto(req: Request, res: Response) {
       try {
          const remotePath = `/uploads/${encodeURIComponent(req.params.filename)}`;
-         const { createClient } = await import("webdav");
+         // const { createClient } = await import("webdav");
          const client = createClient(process.env.WEBDAV_REMOTE_URL || "", { username: process.env.WEBDAV_USERNAME, password: process.env.WEBDAV_PASSWORD, });
 
          const exists = await client.exists(remotePath);
@@ -414,7 +414,7 @@ class PosterController {
                else {
                   filename = `${uuidv4()}${path.extname(req.file.originalname)}`; // Генерируем уникальное имя файла
                   try {
-                     const { createClient } = await import("webdav");
+                     // const { createClient } = await import("webdav");
                      const client = createClient(process.env.WEBDAV_REMOTE_URL || "", { username: process.env.WEBDAV_USERNAME, password: process.env.WEBDAV_PASSWORD, });
                      // overwrite - перезаписать файлы с одинаковыми именами, иначе - ошибка
                      await client.putFileContents('/uploads/' + filename, req.file.buffer, { overwrite: true });
