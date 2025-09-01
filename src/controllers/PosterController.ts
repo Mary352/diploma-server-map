@@ -24,7 +24,7 @@ class PosterController {
       try {
          const remotePath = `/uploads/${encodeURIComponent(req.params.filename)}`;
          // const { createClient } = await import("webdav");
-         const client = createClient(process.env.WEBDAV_REMOTE_URL || "", { username: process.env.WEBDAV_USERNAME, password: process.env.WEBDAV_PASSWORD, });
+         // const client = createClient(process.env.WEBDAV_REMOTE_URL || "", { username: process.env.WEBDAV_USERNAME, password: process.env.WEBDAV_PASSWORD, });
 
          const exists = await client.exists(remotePath);
          if (!exists) {
@@ -415,7 +415,7 @@ class PosterController {
                   filename = `${uuidv4()}${path.extname(req.file.originalname)}`; // Генерируем уникальное имя файла
                   try {
                      // const { createClient } = await import("webdav");
-                     const client = createClient(process.env.WEBDAV_REMOTE_URL || "", { username: process.env.WEBDAV_USERNAME, password: process.env.WEBDAV_PASSWORD, });
+                     // const client = createClient(process.env.WEBDAV_REMOTE_URL || "", { username: process.env.WEBDAV_USERNAME, password: process.env.WEBDAV_PASSWORD, });
                      // overwrite - перезаписать файлы с одинаковыми именами, иначе - ошибка
                      await client.putFileContents('/uploads/' + filename, req.file.buffer, { overwrite: true });
                   } catch (error) {
